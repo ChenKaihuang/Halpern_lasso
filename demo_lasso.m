@@ -26,9 +26,13 @@ function demo_lasso()
 	opts.lambda = lambda;
     opts.backtracking = false;
     opts.result = result;
-    for rho = [1,1.5,1.6,1.9,2]
+    opts.helpern = 1;
+%     for rho = [1,1.5,1.6,1.9,2]
+for rho = 1.5
         opts.rho = rho;
         X_helpern = helpern_lasso(Y, D, [], opts);
+        opts.helpern = 0;
+        x_helpern = helpern_lasso(Y,D,[],opts);
     end
 % 	X_fista = fista_lasso(Y, D, [], opts);
     %% fista solution 

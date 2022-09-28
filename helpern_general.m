@@ -75,7 +75,11 @@ function [X, iter, min_cost] = helpern_general(grad, proj, Xinit, L, opts, calc_
     proxF = @(x) (feval(proj, x - rho*Linv*feval(grad, x), opts_proxF));
     while  iter < opts.max_iter
         iter = iter + 1;
+        if (opts.helpern == 1)
         x_new = (iter+1)/(iter+2)*proxG(x_old);
+        else
+        x_new = proxG(x_old);
+        end
 %         t_new = 0.5*(1 + sqrt(1 + 4*t_old^2));
 %         y_new = x_new + (t_old - 1)/t_new * (x_new - x_old);
         %% check stop criteria

@@ -8,21 +8,25 @@ function demo_lasso()
 	d      = 10; 	% data dimension
 	N      = 20; 	% number of samples 
 	k      = 30; 	% dictionary size 
-	lambda = 0;
+	lambda = 0.01;
+    
 	Y      = normc(rand(d, N));
 	D      = normc(rand(d, k));
+    result = rand(k, N);
+%     Y = normc(D*result);
 	%% cost function 
     function c = calc_F(X)
         c = (0.5*normF2(Y - D*X) + lambda*norm1(X));
     end
     %% helpern solution 
-    opts.max_iter = 250;
-    opts.plot = true;
+    opts.max_iter = 500;
+    opts.plot = 2;
     opts.verbose = true;
 	opts.pos = false;
 	opts.lambda = lambda;
     opts.backtracking = false;
-    for rho = [0.1,0.5,1,1.5,1.6,1.9,2]
+    opts.result = result;
+    for rho = [1,1.5,1.6,1.9,2]
         opts.rho = rho;
         X_helpern = helpern_lasso(Y, D, [], opts);
     end

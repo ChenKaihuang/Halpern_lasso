@@ -36,6 +36,7 @@ function [X, iter, min_cost] = fista_general(grad, proj, Xinit, L, opts, calc_F)
 % -------------------------------------
 %     opts = initOpts(opts);
     plotF = [];
+    plotR = [];
     if ~isfield(opts, 'max_iter')
         opts.max_iter = 500;
     end
@@ -66,6 +67,7 @@ function [X, iter, min_cost] = fista_general(grad, proj, Xinit, L, opts, calc_F)
     
     opts_proj = opts;
     opts_proj.lambda = lambdaLiv;
+    proxH = @(x) (feval(proj, x - Linv*feval(grad, x), opts_proj));
     while  iter < opts.max_iter
         iter = iter + 1;
         x_new = feval(proj, y_old - Linv*feval(grad, y_old), opts_proj);
@@ -76,15 +78,12 @@ function [X, iter, min_cost] = fista_general(grad, proj, Xinit, L, opts, calc_F)
         if e < opts.tol
             break;
         end
-        %% update
-        x_old = x_new;
-        t_old = t_new;
-        y_old = y_new;
         %% show progress
         if opts.verbose
             if nargin ~= 0
                 cost_new = feval(calc_F, x_new);
                 plotF = [plotF, cost_new];
+                plotR = [plotR, norm(x_new - proxH(y_new))];
                 if cost_new <= cost_old 
                     stt = 'YES.';
                 else 
@@ -104,9 +103,17 @@ function [X, iter, min_cost] = fista_general(grad, proj, Xinit, L, opts, calc_F)
                 end     
             end        
         end 
+        
+        %% update
+        x_old = x_new;
+        t_old = t_new;
+        y_old = y_new;
     end
-    if (opts.plot)
-        plot(1:length(plotF), log10(plotF))
+    if (opts.plot == 1)
+        plot(1:length(plotF), (plotF))
+        hold on
+    elseif (opts.plot ==2)
+        plot(1:length(plotR), log10(plotR))
         hold on
     end
     X = x_new;

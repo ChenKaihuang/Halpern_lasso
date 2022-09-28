@@ -36,6 +36,7 @@ function [X, iter, min_cost] = helpern_general(grad, proj, Xinit, L, opts, calc_
 % -------------------------------------
 %     opts = initOpts(opts);
     plotF = [];
+    plotR = [];
     if ~isfield(opts, 'max_iter')
         opts.max_iter = 500;
     end
@@ -74,7 +75,7 @@ function [X, iter, min_cost] = helpern_general(grad, proj, Xinit, L, opts, calc_
     proxF = @(x) (feval(proj, x - rho*Linv*feval(grad, x), opts_proxF));
     while  iter < opts.max_iter
         iter = iter + 1;
-        x_new = proxF(x_old);
+        x_new = (iter+1)/(iter+2)*proxG(x_old);
 %         t_new = 0.5*(1 + sqrt(1 + 4*t_old^2));
 %         y_new = x_new + (t_old - 1)/t_new * (x_new - x_old);
         %% check stop criteria
@@ -82,8 +83,6 @@ function [X, iter, min_cost] = helpern_general(grad, proj, Xinit, L, opts, calc_
         if e < opts.tol
             break;
         end
-        %% update
-        x_old = x_new;
 %         t_old = t_new;
 %         y_old = y_new;
         %% show progress
@@ -91,6 +90,7 @@ function [X, iter, min_cost] = helpern_general(grad, proj, Xinit, L, opts, calc_
             if nargin ~= 0
                 cost_new = feval(calc_F, x_new);
                 plotF = [plotF, cost_new];
+                plotR = [plotR, norm(x_new - proxH(x_new))];
                 if cost_new <= cost_old 
                     stt = 'YES.';
                 else 
@@ -110,13 +110,19 @@ function [X, iter, min_cost] = helpern_general(grad, proj, Xinit, L, opts, calc_
                    fprintf('%d', iter);
                 end     
             end        
-        end 
+        end
+        %% update
+        x_old = x_new;
     end
-    if (opts.plot)
-        plot(1:length(plotF), log10(plotF))
+    if (opts.plot == 1)
+        plot(1:length(plotF), (plotF))
+        hold on
+    elseif (opts.plot ==2)
+        plot(1:length(plotR), log10(plotR))
         hold on
     end
     X = x_new;
+    
     if nargout == 3 
         min_cost = feval(calc_F, X);
     end

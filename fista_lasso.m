@@ -1,4 +1,4 @@
-function X = fista_lasso(Y, D, Xinit, opts)
+function X = fista_lasso(Y, D, L, Xinit, opts)
 
     if ~isfield(opts, 'backtracking')
         opts.backtracking = false;
@@ -38,7 +38,7 @@ function X = fista_lasso(Y, D, Xinit, opts)
 
 %     opts.max_iter = 500;
     %% Lipschitz constant 
-    L = max(eig(DtD));
+%     L = max(eig(DtD));
     %% Use fista 
     [X, ~, ~] = fista_general(@grad, @proj_l1, Xinit, L, opts, @calc_F);
 

@@ -26,10 +26,10 @@ function X = helpern_lasso(Y, D, L, Xinit, opts)
         end
     end 
     %% gradient
-    DtD = D'*D;
+    DtD = @(x) (D'*(D*x));
     DtY = D'*Y;
     function res = grad(X) 
-        res = DtD*X - DtY;
+        res = DtD(X) - DtY;
     end 
     %% Checking gradient 
     if opts.check_grad

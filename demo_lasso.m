@@ -24,7 +24,7 @@ files = dir(strcat(Data,'*.mat'));
 % 	D      = normc(rand(d, k));
 %     result = rand(k, N);
 
-for i = 1:length(files)
+for i = 4:length(files)
     Fig = figure;
     probname = [files(i).folder,filesep,files(i).name]
     m = load([probname]);

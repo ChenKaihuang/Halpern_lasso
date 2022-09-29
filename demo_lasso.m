@@ -48,7 +48,7 @@ for i = 1:length(files)
     opts.helpern = 1;
     opts.prox = 'F';
     %% Lipschitz constant
-    L = eigs(DTDmap, lx, 1) + 1e-3;
+    L = eigs(DTDmap, lx, 1) + 1e-4;
     %     for rho = [1,1.5,1.6,1.9,2]
     for rho = 1.9
         opts.rho = rho;

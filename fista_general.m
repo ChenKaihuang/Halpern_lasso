@@ -62,6 +62,7 @@ function [X, iter, min_cost] = fista_general(grad, proj, Xinit, L, opts, calc_F)
     y_old = Xinit;
     t_old = 1;
     iter = 0;
+    restart = 0;
     cost_old = 1e10;
     %% MAIN LOOP
     
@@ -70,6 +71,7 @@ function [X, iter, min_cost] = fista_general(grad, proj, Xinit, L, opts, calc_F)
     proxH = @(x) (feval(proj, x - Linv*feval(grad, x), opts_proj));
     while  iter < opts.max_iter
         iter = iter + 1;
+        restart = restart + 1;
         x_new = feval(proj, y_old - Linv*feval(grad, y_old), opts_proj);
         t_new = 0.5*(1 + sqrt(1 + 4*t_old^2));
         y_new = x_new + (t_old - 1)/t_new * (x_new - x_old);
@@ -106,7 +108,12 @@ function [X, iter, min_cost] = fista_general(grad, proj, Xinit, L, opts, calc_F)
         
         %% update
         x_old = x_new;
-        t_old = t_new;
+        if (restart == opts.restartStepsize)
+            t_old = 1;
+            restart = 0;
+        else 
+            t_old = t_new;
+        end
         y_old = y_new;
     end
     if (opts.plot == 1)

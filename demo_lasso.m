@@ -8,11 +8,11 @@ addpath('spams/build');
 % 	d      = 5; 	% data dimension
 % 	N      = 10; 	% number of samples
 % 	k      = 15; 	% dictionary size
-lambda = 0.01;
+lambda = 10;
 %
 
 Data = '/home/chenkaihuang/data_UCI/';
-path = '/home/chenkaihuang/Documents/test0929_UCI_halpern_obj_rho19/'
+path = '/home/chenkaihuang/Documents/test0929_UCI_halpern_obj_rho19_lambda10/'
 
 if ~exist(path, 'dir')
     mkdir(path);
@@ -24,7 +24,7 @@ files = dir(strcat(Data,'*.mat'));
 % 	D      = normc(rand(d, k));
 %     result = rand(k, N);
 
-for i = 4:length(files)
+for i = 3
     Fig = figure;
     probname = [files(i).folder,filesep,files(i).name]
     m = load([probname]);
@@ -46,6 +46,8 @@ for i = 4:length(files)
     opts.backtracking = false;
     %     opts.result = result;
     opts.helpern = 1;
+    opts.useBeta = 0;
+    opts.restartStepsize = 1e10;
     opts.prox = 'F';
     %% Lipschitz constant
     L = eigs(DTDmap, lx, 1) + 1e-4;
@@ -53,13 +55,16 @@ for i = 4:length(files)
     for rho = 1.9
         opts.rho = rho;
         X_helpern = helpern_lasso(Y, D, L, [], opts);
+        opts.restartStepsize = 20;
+        x_helpern = helpern_lasso(Y, D, L, [],opts);
         opts.helpern = 0;
         x_helpern = helpern_lasso(Y, D, L, [],opts);
-        opts.prox = 'G';
-        opts.helpern = 1;
-        X_helpern = helpern_lasso(Y, D, L, [], opts);
-        opts.helpern = 0;
-        x_helpern = helpern_lasso(Y, D, L, [],opts);
+%         opts.prox = 'F';
+%         opts.useBeta = 0;
+%         opts.helpern = 1;
+%         X_helpern = helpern_lasso(Y, D, L, [], opts);
+%         opts.helpern = 0;
+%         x_helpern = helpern_lasso(Y, D, L, [],opts);
     end
     % 	X_fista = fista_lasso(Y, D, [], opts);
     %% fista solution
@@ -67,6 +72,9 @@ for i = 4:length(files)
     opts.lambda = lambda;
     opts.backtracking = false;
     %     X_helpern = helpern_lasso(Y, D, [], opts);
+    opts.restartStepsize = 1e10;
+    X_fista = fista_lasso(Y, D, L, [], opts);
+    opts.restartStepsize = 20;
     X_fista = fista_lasso(Y, D, L, [], opts);
     %% PG solution
     % 	opts.pos = false;
@@ -75,13 +83,13 @@ for i = 4:length(files)
     %     X_helpern = helpern_lasso(Y, D, [], opts);
     opts.prox = 'F';
     opts.rho = 1;
-    opts.halpern = 0;
+    opts.helpern = 0;
     X_fista = helpern_lasso(Y, D, L, [], opts);
     %% add legend
-    legend('F\_hp', 'F', 'G\_hp', 'G', 'APG', 'PG')
+    legend('F\_hp\_noRes', 'F\_hp\_res20', 'F', 'APG\_noRes', 'APG\_res20', 'PG')
     
-    saveas(gcf, [pwd, '/', files(i).name(1:end-4), '.fig'])
-    close(Fig);
+%     saveas(gcf, [pwd, '/', files(i).name(1:end-4), '.fig'])
+%     close(Fig);
 end
     
     %% fista with backtracking 

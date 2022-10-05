@@ -62,6 +62,7 @@ function [X, iter, min_cost] = helpern_general(grad, proj, Xinit, L, opts, calc_
     y_old = Xinit;
     t_old = 1;
     iter = 0;
+    restart = 0;
     cost_old = 1e10;
     %% MAIN LOOP
     
@@ -73,17 +74,28 @@ function [X, iter, min_cost] = helpern_general(grad, proj, Xinit, L, opts, calc_
     proxH = @(x) (feval(proj, x - Linv*feval(grad, x), opts_proj));
     proxG = @(x) ((1-rho)*x + rho*proxH(x));
     proxF = @(x) (feval(proj, x - rho*Linv*feval(grad, x), opts_proxF));
+    beta = 0;
     while  iter < opts.max_iter
         iter = iter + 1;
+        restart = restart + 1;
+        beta = 1/2*(1+beta^2);
         if (opts.prox == 'G')
             if (opts.helpern == 1)
-                x_new = (iter+1)/(iter+2)*proxG(x_old);
+                if (opts.useBeta == 1)
+                    x_new = beta*proxG(x_old);
+                else
+                    x_new = 1/(restart+2)*Xinit + (restart+1)/(restart+2)*proxG(x_old);
+                end
             else
                 x_new = proxG(x_old);
             end
         elseif (opts.prox == 'F')
             if (opts.helpern == 1)
-                x_new = (iter+1)/(iter+2)*proxF(x_old);
+                if (opts.useBeta == 1)
+                    x_new = beta*proxF(x_old);
+                else
+                    x_new = (restart+1)/(restart+2)*proxF(x_old);
+                end
             else
                 x_new = proxF(x_old);
             end
@@ -125,7 +137,14 @@ function [X, iter, min_cost] = helpern_general(grad, proj, Xinit, L, opts, calc_
             end        
         end
         %% update
-        x_old = x_new;
+        if (restart == opts.restartStepsize)
+            restart = 0;
+            Xinit = x_new;
+            x_old = x_new;
+        else
+            x_old = x_new;
+        end
+        
     end
     if (opts.plot == 1)
         plot(1:length(plotF), (plotF))
